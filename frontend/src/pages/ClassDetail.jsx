@@ -18,12 +18,9 @@ export default function ClassDetail() {
 
   const fetchData = async () => {
     try {
-      const [clsRes, asgRes] = await Promise.all([
-        api.get(`/api/classes/${classId}`),
-        api.get(`/api/classes/${classId}/assignments`)
-      ]);
+      const clsRes = await api.get(`/api/classes/${classId}`);
       setCls(clsRes.data);
-      setAssignments(asgRes.data.assignments || asgRes.data || []);
+      setAssignments(clsRes.data.assignments || []);
     } catch {
     } finally {
       setLoading(false);

@@ -47,7 +47,7 @@ export default function AssignmentDetail() {
   const handleRunAI = async () => {
     setAiRunning(true);
     try {
-      await api.post(`/api/assignments/${assignmentId}/grade`);
+      await api.post(`/api/assignments/${assignmentId}/ai-grade`);
       await fetchData();
     } catch {
     } finally {
