@@ -88,6 +88,8 @@ function parseODT(filePath) {
  * Inserts spaces/newlines at paragraph and span boundaries.
  * Entity decoding is done in a single pass after all tags are removed to
  * avoid double-escaping (e.g., &amp;lt; becoming &lt; then <).
+ * Tags are stripped in a loop to handle nested or malformed constructs
+ * (e.g., <scr<script>ipt>) until no tags remain.
  */
 function extractTextFromODFXML(xml) {
   // Replace structural tags with whitespace equivalents first
@@ -96,9 +98,15 @@ function extractTextFromODFXML(xml) {
     .replace(/<text:h[^>]*>/g, '\n')
     .replace(/<text:line-break[^>]*\/?>/g, '\n')
     .replace(/<text:tab[^>]*\/?>/g, '\t')
-    .replace(/<text:s[^>]*\/?>/g, ' ')
-    // Remove ALL remaining XML/HTML tags in one pass
-    .replace(/<[^>]+>/g, '');
+    .replace(/<text:s[^>]*\/?>/g, ' ');
+
+  // Strip all remaining XML/HTML tags iteratively until none remain,
+  // guarding against nested constructs that a single pass could miss.
+  let prev;
+  do {
+    prev = text;
+    text = text.replace(/<[^>]*>/g, '');
+  } while (text !== prev);
 
   // Decode XML character entities AFTER tag removal so replacements are never
   // re-processed.  Order matters: &amp; must come last to avoid double-decode.
