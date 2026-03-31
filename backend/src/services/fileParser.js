@@ -86,24 +86,30 @@ function parseODT(filePath) {
 /**
  * Strip XML tags from ODF content.xml and return plain text.
  * Inserts spaces/newlines at paragraph and span boundaries.
+ * Entity decoding is done in a single pass after all tags are removed to
+ * avoid double-escaping (e.g., &amp;lt; becoming &lt; then <).
  */
 function extractTextFromODFXML(xml) {
-  // Replace paragraph tags with newlines
+  // Replace structural tags with whitespace equivalents first
   let text = xml
     .replace(/<text:p[^>]*>/g, '\n')
     .replace(/<text:h[^>]*>/g, '\n')
     .replace(/<text:line-break[^>]*\/?>/g, '\n')
     .replace(/<text:tab[^>]*\/?>/g, '\t')
     .replace(/<text:s[^>]*\/?>/g, ' ')
-    // Remove all remaining XML tags
-    .replace(/<[^>]+>/g, '')
-    // Decode common XML entities
-    .replace(/&amp;/g, '&')
+    // Remove ALL remaining XML/HTML tags in one pass
+    .replace(/<[^>]+>/g, '');
+
+  // Decode XML character entities AFTER tag removal so replacements are never
+  // re-processed.  Order matters: &amp; must come last to avoid double-decode.
+  text = text
+    .replace(/&#xA;/g, '\n')
+    .replace(/&#x9;/g, '\t')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
-    .replace(/&#xA;/g, '\n')
+    .replace(/&amp;/g, '&')
     // Collapse excessive blank lines
     .replace(/\n{3,}/g, '\n\n');
 

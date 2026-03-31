@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const authRoutes = require('./routes/auth');
 const classRoutes = require('./routes/classes');
@@ -20,6 +21,26 @@ app.use(cors({
 // Body parsers
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts, please try again later.' },
+});
+
+app.use('/api/', apiLimiter);
+app.use('/api/auth/', authLimiter);
 
 // Serve uploaded files statically (for optional preview)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
