@@ -33,7 +33,7 @@ function computeLetterGrade(grade) {
  * @param {Array}  params.examples      - Up to 3 manually graded essays as examples
  * @returns {Promise<GradeResult>}
  */
-async function gradeEssaysWithAI({ essay, rubric, guidance, examples }) {
+async function gradeEssayWithAI({ essay, rubric, guidance, examples }) {
   const client = getOpenAIClient();
   if (!client) {
     return mockGrade(essay, rubric);
@@ -167,4 +167,4 @@ function mockGrade(essay, rubric) {
   };
 }
 
-module.exports = { gradeEssaysWithAI };
+module.exports = { gradeEssayWithAI };

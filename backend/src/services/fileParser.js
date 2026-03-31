@@ -35,7 +35,8 @@ async function parseDOCX(filePath) {
   const result = await mammoth.extractRawText({ path: filePath });
   if (result.messages && result.messages.length > 0) {
     result.messages.forEach(m => {
-      if (m.type === 'error') console.warn('[fileParser] mammoth warning:', m.message);
+      if (m.type === 'error') console.error('[fileParser] mammoth error:', m.message);
+      else console.warn('[fileParser] mammoth warning:', m.message);
     });
   }
   return result.value.trim();

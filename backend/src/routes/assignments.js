@@ -6,7 +6,7 @@ const path = require('path');
 const auth = require('../middleware/auth');
 const { getDatabase } = require('../services/database');
 const { parseFile } = require('../services/fileParser');
-const { gradeEssaysWithAI } = require('../services/aiService');
+const { gradeEssayWithAI } = require('../services/aiService');
 
 // Multer storage config
 const storage = multer.diskStorage({
@@ -194,8 +194,10 @@ router.post('/:id/essays', auth, upload.array('files', 50), async (req, res, nex
         essayText = `[Could not parse file: ${parseErr.message}]`;
       }
 
-      // Infer student name from filename (strip extension)
-      const studentName = req.body.student_name ||
+      // Use student_name from request body when provided; otherwise fall back to the
+      // filename stem (spaces substituted for dashes/underscores). Callers should
+      // pass student_name explicitly for accurate attribution.
+      const studentName = (req.body.student_name || '').trim() ||
         path.basename(file.originalname, path.extname(file.originalname)).replace(/[-_]/g, ' ');
 
       const essayId = uuidv4();
@@ -284,7 +286,7 @@ router.post('/:id/ai-grade', auth, async (req, res, next) => {
     const gradedResults = [];
 
     for (const essay of ungradedEssays) {
-      const result = await gradeEssaysWithAI({
+      const result = await gradeEssayWithAI({
         essay,
         rubric,
         guidance: guidance ? guidance.content : '',
