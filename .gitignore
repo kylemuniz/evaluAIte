@@ -1,0 +1,8 @@
+node_modules/
+backend/node_modules/
+backend/*.sqlite
+backend/*.sqlite-shm
+backend/*.sqlite-wal
+backend/.env
+backend/uploads/*
+!backend/uploads/.gitkeep
